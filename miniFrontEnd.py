@@ -24,13 +24,29 @@ parser = None
 
 tokens = (
   'ID', 'INT_LITERAL',
-  'PLUS', 'EQUALS','MINUS','TIMES', 'DIVIDE', 'MODULUS', 'POWER',
+  'PLUS', 'ASSIGN','MINUS','TIMES', 'DIVIDE', 'MODULUS', 'POWER','LT','LTE','EQUALS','NE','GT','GTE',
+  'AND', 'OR','NOT','COLON', 'INT', 'IF', 'ELSE','READ','WRITE','WHILE',
   'LPAREN', 'RPAREN', 'SEMICOLON'
   )
 
 # Tokens
-
-t_EQUALS    = r'='
+t_WHILE     = r'while'
+t_WRITE     = r'write'
+t_READ      = r'read'
+t_ELSE      = r'else'
+t_IF        = r'if'
+t_INT       = r'int'
+t_COLON     = r':'
+t_NOT       = r'!'
+t_OR        = r'||'
+t_AND       = r'&&'
+t_GTE       = r'>=' 
+t_GT        = r'>'
+t_NE        = r'!='
+t_LTE       = r'<='
+t_LT        = r'<'
+t_ASSIGN    = r'='
+t_EQUALS    = r'=='
 t_MINUS     = r'-'
 t_TIMES     = r'\*'
 t_DIVIDE    = r'/'
@@ -86,7 +102,11 @@ start = 'program'
 #-------------------
 # Precedence rules for the operators
 precedence = (
-  ( 'right', 'EQUALS' ),
+  ( 'right', 'ASSIGN' ),
+  ( 'left','OR'),
+  ( 'left', 'AND'),
+  ( 'left','EQUALS','NE'), 
+  ( 'left','LT','LTE','GT','GTE'),
   ( 'left',  'PLUS', 'MINUS' ),
   ( 'left','TIMES', 'DIVIDE', 'MODULUS'),
   ( 'right', 'POWER' ),
