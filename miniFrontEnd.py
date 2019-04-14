@@ -23,42 +23,45 @@ parser = None
 # Lexical analysis section
 
 tokens = (
-  'ID', 'INT_LITERAL',
+  'ID', 'INT_LITERAL','STRING_LITERAL',
   'PLUS', 'ASSIGN','MINUS','TIMES', 'DIVIDE', 'MODULUS', 'POWER','LT','LTE','EQUALS','NE','GT','GTE',
-  'AND', 'OR','NOT','COLON', 'INT', 'IF', 'ELSE','READ','WRITE','WHILE',
-  'LPAREN', 'RPAREN', 'SEMICOLON'
+  'AND', 'OR','NOT','COLON', 'INT', 'IF', 'ELSE','READ','WRITE','WHILE','COMMA',
+  'LPAREN', 'RPAREN', 'SEMICOLON', 'LBRACKET', 'RBRACKET'
   )
 
 # Tokens
-t_WHILE     = r'while'
-t_WRITE     = r'write'
-t_READ      = r'read'
-t_ELSE      = r'else'
-t_IF        = r'if'
-t_INT       = r'int'
-t_COLON     = r':'
-t_NOT       = r'!'
-t_OR        = r'||'
-t_AND       = r'&&'
-t_GTE       = r'>=' 
-t_GT        = r'>'
-t_NE        = r'!='
-t_LTE       = r'<='
-t_LT        = r'<'
-t_ASSIGN    = r'='
-t_EQUALS    = r'=='
-t_MINUS     = r'-'
-t_TIMES     = r'\*'
-t_DIVIDE    = r'/'
-t_MODULUS   = r'%'
-t_POWER    = r'\^'
-t_LPAREN    = r'\('
-t_PLUS      = r'\+'
-t_RPAREN    = r'\)'
-t_SEMICOLON = r';'
+t_COMMA          = r','
+t_RBRACKET       = r'\}'
+t_LBRACKET       = r'\{'
+t_WHILE          = r'while'
+t_WRITE          = r'write'
+t_READ           = r'read'
+t_ELSE           = r'else'
+t_IF             = r'if'
+t_INT            = r'int'
+t_COLON          = r':'
+t_NOT            = r'!'
+t_OR             = r'\|\|'
+t_AND            = r'&&'
+t_GTE            = r'>='
+t_GT             = r'>'
+t_NE             = r'!='
+t_LTE            = r'<='
+t_LT             = r'<'
+t_ASSIGN         = r'='
+t_EQUALS         = r'=='
+t_MINUS          = r'-'
+t_TIMES          = r'\*'
+t_DIVIDE         = r'/'
+t_MODULUS        = r'%'
+t_POWER          = r'\^'
+t_LPAREN         = r'\('
+t_PLUS           = r'\+'
+t_RPAREN         = r'\)'
+t_SEMICOLON      = r';'
 
-t_ID        = r'[a-zA-Z_][a-zA-Z0-9_]*'
-
+t_ID             = r'[a-zA-Z_][a-zA-Z0-9_]*'
+t_STRING_LITERAL = r'\"[a-zA-Z0-9]*[^\n\"]\"'
 def t_INT_LITERAL( t ) :
   r'\d+'
   t.value = int( t.value )
@@ -105,7 +108,7 @@ precedence = (
   ( 'right', 'ASSIGN' ),
   ( 'left','OR'),
   ( 'left', 'AND'),
-  ( 'left','EQUALS','NE'), 
+  ( 'left','EQUALS','NE'),
   ( 'left','LT','LTE','GT','GTE'),
   ( 'left',  'PLUS', 'MINUS' ),
   ( 'left','TIMES', 'DIVIDE', 'MODULUS'),
@@ -117,33 +120,39 @@ precedence = (
 # PROGRAM ...
 
 def p_program( p ) :
-  'program : statement_list semicolon_opt'
-  p[0] = Program( p.lineno( 1 ), p[1] )
+  'program : block_stmt'
+  pass
+def p_stmt_decl_list( p ):
+  '''stmt_decl_list : epsilon
+                      | stmt_decl stmt_decl_list_opt'''
+  pass
+def p_block_stmt( p ):
+  'block_stmt : LBRACKET stmt_decl_list semicolon_opt RBRACKET'
+  pass
+def p_stmt_decl_list_opt( p ) :
+  '''stmt_decl_list_opt : epsilon
+                        | stmt_decl_list_opt SEMICOLON stmt_decl'''
+  pass
 
+def p_stmt_decl( p ) :
+  '''stmt_decl : stmt
+               | decleration'''
+  pass
 def p_semicolon_opt( p ) :
   '''semicolon_opt : epsilon
                    | SEMICOLON'''
-
+  pass
 #-------------------
 # STATEMENTS ...
 
-# Expression statement
-def p_statement_expr( p ) :
-  'statement : expression'
-  p[0] = Statement_Expression( p.lineno(1), p[1] )
-
-# List of statements separated by semicolons
-def p_statement_list_A( p ) :
-  'statement_list : statement_list SEMICOLON statement'
-  p[1].append( p[3] )
-  p[0] = p[1]
-
-def p_statement_list_B( p ) :
-  'statement_list : statement'
-  p[0] = [ p[1] ]
-
 #-------------------
 # IDENTIFIER ...
+def p_decleration( p ) :
+  'decleration : identifier COLON INT assignment_opt'
+  pass
+def p_type( p ) :
+  'type : INT'
+  pass
 
 def p_identifier( p ) :
   'identifier : ID'
@@ -152,6 +161,14 @@ def p_identifier( p ) :
 #-------------------
 # EXPRESSIONS ...
 # Binary operator expression
+def p_expr( p ) :
+  '''expr : expression
+          | lvalue'''
+  pass
+def p_lvalue( p ):
+  'lvalue : identifier '
+  pass
+
 def p_expression_binop( p ) :
   '''expression : expression PLUS expression
                 | expression MINUS expression
@@ -159,7 +176,7 @@ def p_expression_binop( p ) :
                 | expression MODULUS expression
                 | expression TIMES expression
                 | expression POWER expression
-                | identifier EQUALS expression'''
+                | identifier ASSIGN expression'''
   p[0] = BinaryOp( p.lineno(2), p[2], p[1], p[3] )
 # Unary operator expression 
 def p_expression_unop( p ):
@@ -181,6 +198,52 @@ def p_expression_id( p ) :
   'expression : identifier'
   p[0] = p[1]
 
+def p_assignment_opt( p ):
+  '''assignment_opt : epsilon
+                    | ASSIGN expression'''
+  pass
+def p_stmt( p ) :
+  '''stmt : block_stmt
+          | expr_stmt
+          | if_stmt
+          | read_stmt
+          | while_stmt
+          | write_stmt'''
+  pass
+def p_expr_stmt( p ) :
+  'expr_stmt : expr'
+  pass
+def p_if_stmt( p ) :
+  'if_stmt : IF expr block_stmt else_opt'
+  pass
+def p_else_opt( p ) :
+  '''else_opt : epsilon
+              | ELSE block_stmt'''
+  pass
+def p_read_stmt( p ) :
+  'read_stmt : READ LPAREN read_opt RPAREN'
+  pass
+def p_read_opt( p ) :
+  '''read_opt : epsilon
+              | read_opt COMMA lvalue'''
+  pass
+def p_while_stmt( p ) :
+  'while_stmt : WHILE expr block_stmt'
+  pass
+def p_write_stmt( p ):
+  'write_stmt : LPAREN write_opt RPAREN'
+def p_write_opt( p ):
+  '''write_opt : epsilon
+               | expr_string expr_string_opt'''
+  pass
+def p_expr_string_opt( p ):
+  '''expr_string_opt : epsilon
+                     | expr_string_opt COMMA expr_string'''
+  pass
+def p_expr_string( p ):
+  '''expr_string : expr
+                 | STRING_LITERAL'''
+  pass
 #-------------------
 # The 'empty' value.  It's possible to just have an empty RHS
 # in a production, but having the non-terminal 'epsilon' makes
@@ -193,6 +256,8 @@ def p_epsilon( p ) :
 # Gets called if an unexpected token (or the EOF) is seen during
 # a parse.  We throw an exception
 def p_error( p ) :
+
+'''
   msg = 'Syntax error at '
   if p is None :
     msg += 'EOF.'
@@ -206,7 +271,7 @@ def p_error( p ) :
     msg += f'token "{p.value}", line {p.lineno}, column {column}'
 
   raise SyntacticError( msg )
-
+'''
 #---------#---------#---------#---------#---------#--------#
 def _main( inputFileName ) :
   global lexer
@@ -229,13 +294,13 @@ def _main( inputFileName ) :
     strt    = time()
     lexer   = ply.lex.lex()
     parser  = ply.yacc.yacc()
-    program = parser.parse( data, tracking = True )
-
+    program = parser.parse( data, debug = True ,tracking = True )
     print( f'    Parse succeeded.  ({time()-strt:.3f}s)\n* Beginning parse dump to {parseFile!r} ...' )
 
     strt = time()
     with open( parseFile, 'w' ) as fp :
-      program.dump( fp = fp )
+      if program is not None:
+        program.dump( fp = fp )
 
     print( f'    Parse dumped.  ({time()-strt:.3f}s)' )
 
