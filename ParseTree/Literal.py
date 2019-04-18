@@ -17,7 +17,8 @@ class Literal() :
 
   #---------------------------------------
   def dump( self, indent = 0, fp = sys.stdout ) :
+    value = self.m_Value[1:-1] if self.m_Kind == 'string' else self.m_Value
     dumpHeaderLine( indent, self.m_LineNum,
-      f'LITERAL {self.m_Kind!r} {self.m_Value!r}', fp )
+      f'LITERAL {self.m_Kind!r} {value!r}', fp )
 
 #---------#---------#---------#---------#---------#--------#

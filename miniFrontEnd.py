@@ -236,7 +236,10 @@ def p_expression_int_literal( p ) :
 def p_assignment_opt( p ):
     '''assignment_opt : epsilon
                       | ASSIGN expression'''
-    p[0] = p[2]
+    if p[1] is None :
+        p[0] = None
+    else :
+        p[0] = p[2]
 def p_expr_stmt( p ) :
     '''expr_stmt : expression'''
     p[0] = Statement_Expression(p.lineno(1), p[1])
