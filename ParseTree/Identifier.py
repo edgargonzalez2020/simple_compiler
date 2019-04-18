@@ -18,5 +18,7 @@ class Identifier() :
   def dump( self, indent = 0, fp = sys.stdout ) :
     dumpHeaderLine( indent, self.m_LineNum,
       f'IDENTIFIER {self.m_ID!r}', fp )
+  def get_id(self):
+    return self.m_ID
 
 #---------#---------#---------#---------#---------#--------#
